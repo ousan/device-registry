@@ -5,7 +5,7 @@ WORKDIR /src
 
 RUN microdnf upgrade -y && microdnf install -y g++ cmake
 
-COPY . /src/
+COPY ./src/ /src/
 
 RUN mkdir build && cd build && cmake .. && make
 

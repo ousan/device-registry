@@ -1,6 +1,6 @@
 [submodule "cpp-httplib"]
-	path = cpp-httplib
+	path = src/cpp-httplib
 	url = https://github.com/yhirose/cpp-httplib
 [submodule "json"]
-	path = json
+	path = src/json
 	url = https://github.com/nlohmann/json
