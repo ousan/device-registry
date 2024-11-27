@@ -3,12 +3,10 @@ name: Docker Image CI
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
 
-  build:
+  publish_image:
 
     runs-on: ubuntu-latest
 
@@ -18,4 +16,8 @@ jobs:
       with:
         submodules: 'true'
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag device-registry:$(date +%s)
+      run: docker build . --file Dockerfile --tag ousan/device-registry:$(date +%s)
+    - name: Push image to Docker Hub
+      run: |
+        docker login -u ousan
+        docker push ousan/device-registry:$(date +%s)
