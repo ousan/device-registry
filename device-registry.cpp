@@ -1,6 +1,7 @@
 // ping.cpp
 #include <cstdlib>
 #include <string>
+#include <unistd.h>
 
 #include <bsoncxx/json.hpp>
 #include <mongocxx/client.hpp>
@@ -22,6 +23,7 @@ using json = nlohmann::json;
 
 int main() {
     try {
+        sleep(3);
         // Create an instance.
         mongocxx::instance inst{};
 
