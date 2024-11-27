@@ -19,5 +19,5 @@ jobs:
       run: docker build . --file Dockerfile --tag ousan/device-registry:$(date +%s)
     - name: Push image to Docker Hub
       run: |
-        docker login -u ousan
+        docker login -u ousan -p ${{secrets.DOCKER_HUB_TOKEN}}
         docker push ousan/device-registry:$(date +%s)
