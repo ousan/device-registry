@@ -1,0 +1,24 @@
+services:
+
+  device-registry:
+    image: ousan/device-registry:latest
+    ports:
+      - '8085:8085'
+    depends_on:
+      - mongodb
+    networks:
+      - node-network
+
+  mongodb:
+    image: mongodb/mongodb-community-server:latest
+    ports:
+      - '27017:27017'
+    networks:
+      - node-network
+
+volumes:
+  dbdata6:
+
+networks:
+  node-network:
+    driver: bridge
