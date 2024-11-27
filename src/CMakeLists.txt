@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.14...3.31)
 project(device-registry)
 
-add_subdirectory(cpp-httplib)
-add_subdirectory(json)
+add_subdirectory(3rd-party/cpp-httplib)
+add_subdirectory(3rd-party/json)
 
 include_directories("/usr/local/include/mongocxx/v_noabi")
 include_directories("/usr/local/include/bsoncxx/v_noabi")
