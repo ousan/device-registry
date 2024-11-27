@@ -16,8 +16,8 @@ jobs:
       with:
         submodules: 'true'
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag ousan/device-registry:$(date +%s)
+      run: docker build . --file Dockerfile --tag ousan/device-registry:latest
     - name: Push image to Docker Hub
       run: |
         docker login -u ousan -p ${{secrets.DOCKER_HUB_TOKEN}}
-        docker push ousan/device-registry:$(date +%s)
+        docker push ousan/device-registry:latest
