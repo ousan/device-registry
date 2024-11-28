@@ -1,7 +1,7 @@
 services:
 
   device-registry:
-    build: .
+    image: ousan/device-registry:latest
     ports:
       - '8085:8085'
     depends_on:
