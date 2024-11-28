@@ -37,6 +37,14 @@ public:
         std::cout << "Service getLocation" << std::endl;
         return "repo->getLocation(id);";
     }
+
+    bool addLocation(const std::string& req) override{
+        nlohmann::json json_data = nlohmann::json::parse(req);
+        //std::cout << data.dump(4) << std::endl;
+        std::cout <<"Add Location Req :" << req << std::endl;
+        Location loc ("", json_data["name"], json_data["type"]);
+        return repo->addLocation(loc);
+    }
     
 private:
     const std::shared_ptr<ILocationRepository>& repo;

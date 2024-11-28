@@ -30,6 +30,12 @@ class HttpServer{
             std::string response = locationService->getAllLocations();
             res.set_content(response, "application/json");
         });
+
+        server.Post("/location", [&](const httplib::Request & req, httplib::Response &res) {
+            auto result = _locationService->addLocation(req.body);
+            res.status = result ?  httplib::StatusCode::OK_200 : httplib::StatusCode::Unauthorized_401;
+            res.set_content("Completed", "text/plain");
+        });
     
     }
     

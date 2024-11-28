@@ -13,7 +13,7 @@ class DeviceRepository : public IDeviceRepository{
         std::string getName() override {
             return "Device";
         }
-
+        
         std::vector<Device> getAllDevices(){
             std::cout << "getAllDevices" << std::endl;
             Location loc("1","2","3");
