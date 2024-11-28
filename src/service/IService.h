@@ -19,4 +19,5 @@ class ILocationService: public IService{
 public:
     virtual const std::string getAllLocations() = 0;
     virtual const std::string getLocation(std::string id) = 0;
+    virtual bool addLocation(const std::string&) = 0;
 };

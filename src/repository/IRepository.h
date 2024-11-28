@@ -3,6 +3,7 @@
 #include <string>
 #include "Device.h"
 #include "Location.h"
+#include <nlohmann/json.hpp>
 
 class IRepository{
     public: 
@@ -19,4 +20,5 @@ class ILocationRepository : public IRepository{
     public: 
         virtual const Location getLocation(std::string id) = 0;
         virtual std::vector<Location> getAllLocations() = 0;
+        virtual bool addLocation(const Location&) = 0;
 };
