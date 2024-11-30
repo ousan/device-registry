@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "IRepository.h"
+#include "StatusCode.h"
 
 class IService{
 public:
@@ -11,13 +12,13 @@ public:
 
 class IDeviceService: public IService{
 public:
-    virtual const std::string getAllDevices() = 0;
-    virtual const std::string getDevice(std::string id) = 0;
+    virtual const StatusCode getAllDevices(std::string& deviceList) const = 0;
+    virtual const StatusCode getDevice(const std::string& id, std::string& device) const = 0;
 };
 
 class ILocationService: public IService{
 public:
-    virtual const std::string getAllLocations() = 0;
-    virtual const std::string getLocation(std::string id) = 0;
-    virtual bool addLocation(const std::string&) = 0;
+    virtual const StatusCode getAllLocations(std::string& locationList) const = 0;
+    virtual const StatusCode getLocation(const std::string& id, std::string& location) const = 0;
+    virtual const StatusCode addLocation(const std::string&) = 0;
 };

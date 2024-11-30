@@ -19,31 +19,44 @@ public:
         return "LocationService";
     }
 
-    const std::string getAllLocations() override{
-        std::vector<Location> list = repo->getAllLocations();
-        
-        nlohmann::json json_obj;
-        for(auto location : list){
-            nlohmann::json obj;
-            obj["name"] = location.name;
-            obj["id"] = location.id;
-            obj["type"] = location.type;
-            json_obj.push_back(obj);
+    const nlohmann::json getLocationJsonObj(const Location& loc)const {
+        nlohmann::json obj;
+        obj["name"] = loc.name;
+        obj["id"] = loc.id;
+        obj["type"] = loc.type;
+        return obj;
+    }
+
+    const StatusCode getAllLocations(std::string& response) const override{
+        std::cout << "Service getAllLocations" << std::endl;
+        std::vector<Location> list ;
+        StatusCode sc = repo->getAllLocations(list);
+        if(StatusCode::LOCATION_FOUND == sc){
+            nlohmann::json json_obj;
+            for(auto location : list){
+                json_obj.push_back(getLocationJsonObj(location));
+            }
+            response = json_obj.dump();
         }
-        return json_obj.dump();
+
+        return sc;
     }
 
-    const std::string getLocation(std::string id) override{
+    const StatusCode getLocation(const std::string& id, std::string& locationResponse) const override{
         std::cout << "Service getLocation" << std::endl;
-        return "repo->getLocation(id);";
+        Location loc; 
+        StatusCode sc = repo->getLocation(id,loc);
+        if(StatusCode::LOCATION_FOUND == sc)
+            locationResponse = getLocationJsonObj(loc).dump();
+        return sc;
     }
 
-    bool addLocation(const std::string& req) override{
+    const StatusCode addLocation(const std::string& req) override{
+        std::cout <<"addLocation" << std::endl;
         nlohmann::json json_data = nlohmann::json::parse(req);
-        //std::cout << data.dump(4) << std::endl;
-        std::cout <<"Add Location Req :" << req << std::endl;
         Location loc ("", json_data["name"], json_data["type"]);
-        return repo->addLocation(loc);
+        StatusCode sc = repo->addLocation(loc); 
+        return sc;
     }
     
 private:

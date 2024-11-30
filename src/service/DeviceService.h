@@ -19,25 +19,30 @@ public:
         return "DeviceService";
     }
 
-    const std::string getAllDevices(){
-        std::vector<Device> list = repo->getAllDevices();
+    const StatusCode getAllDevices(std::string& deviceList) const override{
+        std::vector<Device> list; 
+        StatusCode sc = repo->getAllDevices(list);
         
-        nlohmann::json json_obj;
-        for(auto device : list){
-            nlohmann::json obj;
-            obj["name"] = device.name;
-            obj["id"] = device.id;
-            obj["type"] = device.type;
-            obj["serialNumber"] = device.serialNumber;
-            obj["location"] = device.location;
-            json_obj.push_back(obj);
+        if(StatusCode::DEVICE_FOUND == sc){
+            nlohmann::json json_obj;
+            for(auto device : list){
+                nlohmann::json obj;
+                obj["name"] = device.name;
+                obj["id"] = device.id;
+                obj["type"] = device.type;
+                obj["serialNumber"] = device.serialNumber;
+                obj["location"] = device.location;
+                json_obj.push_back(obj);
+            }
+            deviceList = json_obj.dump();
         }
-        return json_obj.dump();
+
+        return sc;
     }
 
-    const std::string getDevice(std::string id){
+    const StatusCode getDevice(const std::string& id, std::string& device) const override{
         std::cout << "Service getDevice" << std::endl;
-        return "repo->getDevice(id)";
+        return StatusCode::SUCCESS;
     }
     
 private:

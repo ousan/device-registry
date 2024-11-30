@@ -3,6 +3,7 @@
 #include <string>
 
 struct Location{
+    Location() = default;
     Location(const std::string& _id, 
              const std::string& _name, 
              const std::string& _type)

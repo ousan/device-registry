@@ -3,7 +3,7 @@
 #include <string>
 #include "Device.h"
 #include "Location.h"
-#include <nlohmann/json.hpp>
+#include "StatusCode.h"
 
 class IRepository{
     public: 
@@ -12,13 +12,13 @@ class IRepository{
 
 class IDeviceRepository : public IRepository{
     public: 
-        virtual const Device getDevice(std::string id) = 0;
-        virtual std::vector<Device> getAllDevices() = 0;
+        virtual const StatusCode getDevice(const std::string& id, Device& device) const = 0;
+        virtual const StatusCode getAllDevices(std::vector<Device>& dList) const = 0;
 };
 
 class ILocationRepository : public IRepository{
     public: 
-        virtual const Location getLocation(std::string id) = 0;
-        virtual std::vector<Location> getAllLocations() = 0;
-        virtual bool addLocation(const Location&) = 0;
+        virtual const StatusCode getLocation(const std::string& id, Location& location) const = 0;
+        virtual const StatusCode getAllLocations(std::vector<Location>& dList) const = 0;
+        virtual const StatusCode addLocation(const Location& loc) = 0;
 };

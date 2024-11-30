@@ -4,7 +4,7 @@
 
 #include "LocationService.h"
 #include "DeviceService.h"
-
+#include "StatusCode.h"
 
 constexpr char deviceEndpoint[] = "/devices";
 constexpr char locationEndpoint[] = "/location";
@@ -18,25 +18,59 @@ class HttpServer{
                const std::shared_ptr<IDeviceService>& _deviceService)
                 :locationService(_locationService), deviceService(_deviceService)
     {
+        
         server.Get("/hi", [](const httplib::Request & /*req*/, httplib::Response &res) {
             res.set_content("Hello World!", "application/json");
         });
         server.Get("/devices", [&](const httplib::Request & /*req*/, httplib::Response &res) {
-            std::string response = deviceService->getAllDevices();
+            std::string response;
+            res.status = 200; 
+            StatusCode sc = deviceService->getAllDevices(response);
+            if(sc != StatusCode::DEVICE_FOUND){
+                res.status = 400;
+            }
             res.set_content(response, "application/json");
         });
     
         server.Get("/locations", [&](const httplib::Request & /*req*/, httplib::Response &res) {
-            std::string response = locationService->getAllLocations();
+            std::string response;
+            res.status = 200; 
+            StatusCode sc = locationService->getAllLocations(response);
+            std::cout <<"Response : " << response << std::endl;
+            if(sc != StatusCode::LOCATION_FOUND){
+                res.status = 400;
+            }
             res.set_content(response, "application/json");
         });
 
         server.Post("/location", [&](const httplib::Request & req, httplib::Response &res) {
-            auto result = _locationService->addLocation(req.body);
-            res.status = result ?  httplib::StatusCode::OK_200 : httplib::StatusCode::Unauthorized_401;
+            auto sc = _locationService->addLocation(req.body);
+            res.status = 200; 
+            if(sc != StatusCode::LOCATION_NOT_ADDED){
+                res.status = 400;
+                res.set_content("Not Completed", "text/plain");
+                return;
+            }
             res.set_content("Completed", "text/plain");
         });
-    
+
+        server.Get("/location", [&](const httplib::Request & req, httplib::Response &res) {
+            
+            std::string error_message;
+            if (!validate_params(location_expected_params,req.params,error_message)) {
+                 res.status = 400;  // Bad Request
+                 res.set_content(error_message, "text/plain");
+                 return;  
+            }
+            std::string locationResponse;
+            auto sc = locationService->getLocation("req.params",locationResponse);
+            if(sc != StatusCode::LOCATION_NOT_FOUND){
+                res.status = 400;               
+                res.set_content("Not Completed", "text/plain");
+                return;
+            }
+            res.set_content("Completed", "text/plain");
+        });
     }
     
     void start()
@@ -44,8 +78,39 @@ class HttpServer{
         server.listen(ipAddress,port);
     }
     
+    // Function to validate query parameters
+    bool validate_params(const std::unordered_map<std::string, std::regex>& expected_params, 
+                         const httplib::Params &params, 
+                         std::string &error_message) {
+        
+        for (const auto &[key, value] : params) {
+            auto it = expected_params.find(key);
+            if (it == expected_params.end()) {
+                error_message = "Invalid key: " + key;
+                return false;
+            }
+            if(!std::regex_match(value, it->second)){
+                error_message = "Invalid value for parameter: " + key;
+                return false;
+            }
+        }
+        return true;
+    }
+
     private:
         httplib::Server server;
         const std::shared_ptr<ILocationService>& locationService;
         const std::shared_ptr<IDeviceService>& deviceService;
+        std::unordered_map<std::string, std::regex> location_expected_params = {
+            {"id", std::regex(R"(^[a-zA-Z0-9]+$)" )},     // id must be alphanumeric
+            {"name", std::regex(R"(^[a-zA-Z0-9]+$)" )},   // name must be alphanumeric
+            {"type", std::regex(R"(^[a-zA-Z0-9]+$)" )}    // type must be alphanumeric
+        };
+
+        std::unordered_map<std::string, std::regex> device_expected_params = {
+            {"id", std::regex(R"(^[a-zA-Z0-9]+$)" )},     // id must be alphanumeric
+            {"name", std::regex(R"(^[a-zA-Z0-9]+$)" )},   // name must be alphanumeric
+            {"type", std::regex(R"(^[a-zA-Z0-9]+$)" )},    // type must be alphanumeric
+            {"sn", std::regex(R"(^[a-zA-Z0-9]+$)" )}      // sn must be alphanumeric
+        };
 };
