@@ -12,7 +12,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/controller)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/repository)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/service)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/model)
-
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/utils)
 #set(HEADERS
 #   ${HEADERS}
 #   ${CMAKE_CURRENT_SOURCE_DIR}/controller/HttpServer.h
