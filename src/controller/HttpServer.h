@@ -5,6 +5,7 @@
 #include "LocationService.h"
 #include "DeviceService.h"
 #include "StatusCode.h"
+#include "spdlog/spdlog.h"
 
 constexpr char deviceEndpoint[] = "/devices";
 constexpr char locationEndpoint[] = "/location";
@@ -19,26 +20,28 @@ class HttpServer{
                 :locationService(_locationService), deviceService(_deviceService)
     {
         
-        server.Get("/hi", [](const httplib::Request & /*req*/, httplib::Response &res) {
-            res.set_content("Hello World!", "application/json");
-        });
+
         server.Get("/devices", [&](const httplib::Request & /*req*/, httplib::Response &res) {
+            spdlog::debug("Requested All Devices!");
+            
             std::string response;
             res.status = 200; 
             StatusCode sc = deviceService->getAllDevices(response);
-            if(sc != StatusCode::DEVICE_FOUND){
-                res.status = 400;
+            spdlog::debug("Http Response {} !", response);
+            if(StatusCode::DEVICE_FOUND != sc){
+                res.status = 404;
             }
             res.set_content(response, "application/json");
         });
     
         server.Get("/locations", [&](const httplib::Request & /*req*/, httplib::Response &res) {
+            spdlog::debug("Requested All Locations!");
             std::string response;
             res.status = 200; 
             StatusCode sc = locationService->getAllLocations(response);
-            std::cout <<"Response : " << response << std::endl;
+            spdlog::debug("Http Response {} !", response);
             if(sc != StatusCode::LOCATION_FOUND){
-                res.status = 400;
+                res.status = 404;
             }
             res.set_content(response, "application/json");
         });
@@ -46,7 +49,7 @@ class HttpServer{
         server.Post("/location", [&](const httplib::Request & req, httplib::Response &res) {
             auto sc = _locationService->addLocation(req.body);
             res.status = 200; 
-            if(sc != StatusCode::LOCATION_NOT_ADDED){
+            if(sc != StatusCode::LOCATION_NOT_CREATED){
                 res.status = 400;
                 res.set_content("Not Completed", "text/plain");
                 return;
@@ -57,16 +60,16 @@ class HttpServer{
         server.Get("/location", [&](const httplib::Request & req, httplib::Response &res) {
             
             std::string error_message;
-            if (!validate_params(location_expected_params,req.params,error_message)) {
+            if (!validateQueryParams(location_expected_params,req.params,error_message)) {
                  res.status = 400;  // Bad Request
                  res.set_content(error_message, "text/plain");
                  return;  
             }
-            std::string locationResponse;
-            auto sc = locationService->getLocation("req.params",locationResponse);
+            std::string response;
+            auto sc = locationService->getLocation("req.params",response);
             if(sc != StatusCode::LOCATION_NOT_FOUND){
-                res.status = 400;               
-                res.set_content("Not Completed", "text/plain");
+                res.status = 404;               
+                res.set_content(response, "application/json");
                 return;
             }
             res.set_content("Completed", "text/plain");
@@ -79,7 +82,7 @@ class HttpServer{
     }
     
     // Function to validate query parameters
-    bool validate_params(const std::unordered_map<std::string, std::regex>& expected_params, 
+    bool validateQueryParams(const std::unordered_map<std::string, std::regex>& expected_params, 
                          const httplib::Params &params, 
                          std::string &error_message) {
         
@@ -93,6 +96,8 @@ class HttpServer{
                 error_message = "Invalid value for parameter: " + key;
                 return false;
             }
+
+            
         }
         return true;
     }

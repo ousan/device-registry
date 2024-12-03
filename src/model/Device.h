@@ -4,6 +4,7 @@
 #include "Location.h"
 
 struct Device{
+    Device() = default;
     Device(const std::string& _id, 
            const std::string& _name, 
            const std::string& _type, 
