@@ -13,18 +13,19 @@
 #include "mongocxx/database.hpp"
 #include "mongocxx/uri.hpp"
 #include <mongocxx/instance.hpp>
+#include "spdlog/spdlog.h"
 
 using bsoncxx::type;
 constexpr char kLocationName[] = "Name";
 constexpr char kLocationType[] = "Type";
 
-constexpr char kCollectionName[] = "Locations";
-constexpr char kMongoDbUri[] = "mongodb://mongodb:27017";
-constexpr char kDatabaseName[] = "Device_Registry";
+constexpr char kLocationCollectionName[] = "Locations";
+//constexpr char kMongoDbUri[] = "mongodb://mongodb:27017";
+//constexpr char kDatabaseName[] = "Device_Registry";
 
 class LocationRepository : public ILocationRepository{
 public:
-    LocationRepository()
+    LocationRepository(const std::string& kMongoDbUri, const std::string& kDatabaseName)
     : uri(mongocxx::uri(kMongoDbUri)),
         client(mongocxx::client(uri)),
         db(client[kDatabaseName]) 
@@ -36,8 +37,7 @@ public:
     }
 
     const StatusCode getAllLocations(std::vector<Location>& dList) const override{
-        std::cout << "getAllLocations" << std::endl;
-        mongocxx::collection collection = db[kCollectionName];
+        mongocxx::collection collection = db[kLocationCollectionName];
         mongocxx::cursor cursor = collection.find({});
         StatusCode sc = StatusCode::LOCATION_NOT_FOUND;
         for (auto&& doc : cursor) {
@@ -46,13 +46,11 @@ public:
             bsoncxx::document::element type = doc["Type"];
             if (id_ele.type() == type::k_oid) {
                 std::string oid = id_ele.get_oid().value.to_string();
-                std::cout << "OID: " << oid << 
-                                " curve name: " << name.get_utf8().value <<
-                                " curve type: " << type.get_utf8().value << std::endl;
+                spdlog::debug("OID: {} Curve Name: {} Curve Type:{}", oid, name.get_utf8().value, type.get_utf8().value);
                 Location loc (oid,std::string(name.get_utf8().value), std::string(type.get_utf8().value));
                 dList.push_back(loc);
             } else {
-                std::cout << "Error: _id was not an object ID." << std::endl;
+                spdlog::error("Error: _id was not an object ID");
             }
         }
 
@@ -66,8 +64,8 @@ public:
         return StatusCode::LOCATION_FOUND;
     }
 
-    const StatusCode addLocation(const Location& loc) override{
-        mongocxx::collection collection = db[kCollectionName];
+    const StatusCode addLocation(Location& loc) override{
+        mongocxx::collection collection = db[kLocationCollectionName];
         auto builder = bsoncxx::builder::stream::document{};
         bsoncxx::v_noabi::document::value doc_value =
             builder << kLocationName << loc.name 
@@ -78,18 +76,22 @@ public:
             if (maybe_result) {
                 bool res = maybe_result->inserted_id().get_oid().value.to_string().size() != 0;
 
-                return res ? StatusCode::LOCATION_CREATED : StatusCode::LOCATION_NOT_ADDED;
+                return res ? StatusCode::LOCATION_CREATED : StatusCode::LOCATION_NOT_CREATED;
             }else{
                 std::cout << "Maybe result failed" << std::endl;
-                return StatusCode::LOCATION_NOT_ADDED;
+                return StatusCode::LOCATION_NOT_CREATED;
             }
         } catch (const std::exception &e) {
             std::cerr << "Exception: " << e.what() << std::endl;
-            return StatusCode::LOCATION_NOT_ADDED;
+            return StatusCode::LOCATION_NOT_CREATED;
         }
-        return StatusCode::LOCATION_NOT_ADDED;;
+        return StatusCode::LOCATION_NOT_CREATED;;
     }
 
+    const StatusCode deleteLocation(const std::string& id) override{
+        spdlog::debug("DeleteLocation {}  !", id);
+        return StatusCode::LOCATION_DELETED;
+    }
 private:
     mongocxx::uri uri;
     mongocxx::client client;

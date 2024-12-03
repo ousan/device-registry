@@ -6,17 +6,35 @@
 
 #include "IRepository.h"
 #include "Device.h"
+#include "spdlog/spdlog.h"
+
+#include "bsoncxx/builder/stream/document.hpp"
+#include "bsoncxx/json.hpp"
+#include "bsoncxx/oid.hpp"
+#include "mongocxx/client.hpp"
+#include "mongocxx/database.hpp"
+#include "mongocxx/uri.hpp"
+#include <mongocxx/instance.hpp>
+
+constexpr char kDeviceCollectionName[] = "Devices";
+//constexpr char kMongoDbUri[] = "mongodb://mongodb:27017";
+//constexpr char kDatabaseName[] = "Device_Registry";
 
 class DeviceRepository : public IDeviceRepository{
-    
 public:
+    DeviceRepository(const std::string& kMongoDbUri, const std::string& kDatabaseName)
+    :uri(mongocxx::uri(kMongoDbUri)),
+        client(mongocxx::client(uri)),
+        db(client[kDatabaseName]) 
+        {
+        }
+
     std::string getName() override {
         return "Device";
     }
     
     const StatusCode getAllDevices(std::vector<Device>& dList) const override{
-        std::cout << "getAllDevices" << std::endl;
-  
+          
         Device test("device id ","device name","device type","device serialnumber","device location");
         dList.push_back(test);
         
@@ -36,4 +54,18 @@ public:
         device = test;
         return StatusCode::DEVICE_FOUND;
     }
+    
+    const StatusCode deleteDevice(const std::string& id) override{
+        spdlog::debug("DeleteDevice {}  !", id);
+        return StatusCode::DEVICE_DELETED;
+    }
+
+    const StatusCode addDevice(Device& device){
+        spdlog::debug("addDevice {}  !", device.name);
+        return StatusCode::DEVICE_CREATED;
+    }
+private:
+    mongocxx::uri uri;
+    mongocxx::client client;
+    mongocxx::database db;
 };

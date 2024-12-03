@@ -4,14 +4,15 @@
 #include "LocationService.h"
 #include "HttpServer.h"
 #include "RepositoryManager.h"
-#include <mongocxx/instance.hpp>
 #include "spdlog/spdlog.h"
 
 
 int main() {
-    mongocxx::instance instance;
+    
     spdlog::info("Welcome to spdlog version {}.{}.{}  !", SPDLOG_VER_MAJOR, SPDLOG_VER_MINOR,
                  SPDLOG_VER_PATCH);
+    spdlog::set_level(spdlog::level::debug); // Set global log level to debug
+    
     std::shared_ptr<IRepositoryManager> rm = std::make_shared<RepositoryManager>();
     rm->initializeRepositories();
     
